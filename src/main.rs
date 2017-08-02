@@ -4,27 +4,24 @@ mod display;
 
 extern crate sdl2;
 
+use keys::*;
+use std::{thread, time};
+
 
 fn main() {
     println!("Test");
-
-    let sdl_context = sdl2::init().unwrap();
-    let video_subsystem = sdl_context.video().unwrap();
-
-    let window = video_subsystem
-        .window("rust-sdl2 demo: Window", 800, 600)
-        .build()
-        .unwrap();
-
-    let mut canvas = window.into_canvas().present_vsync().build().unwrap();
-
-    let mut tick = 0;
-
-    let mut event_pump = sdl_context.event_pump().unwrap();
+    let context = sdl2::init().unwrap();
+    let mut display = display::SDLDisplay::new(&context);
+    let mut keys = keys::SDLKeys::new(&context);
+    let mut cpu = cpu::Cpu::new(&mut keys, &mut display);
+    
 
     'main: loop{
-        'event: loop{
-
+        match cpu.poll_keys() {
+            Some(e) => {},
+            None => break 'main
         }
+        
+        thread::sleep(time::Duration::from_millis(1));
     }
 }
