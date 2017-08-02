@@ -1,0 +1,7 @@
+[package]
+name = "chip8"
+version = "0.1.0"
+authors = ["elochim_siemasz <michal.flak.96@gmail.com>"]
+
+[dependencies]
+sdl2 = "*"
