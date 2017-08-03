@@ -1,6 +1,10 @@
+extern crate rand;
+
 use keys;
 use display;
 use std::time::{Instant, Duration};
+use cpu::rand::Rng;
+
 
 pub struct Cpu<'a> {
     sound_timestamp: Instant,
@@ -45,8 +49,8 @@ impl<'a> Cpu<'a> {
 
                 let mut ram = Cpu::from_slice(&vector);
                 //debug:
-                println!("{:?}", &ram.to_vec());
-                //assert_eq!(ram.to_vec().len(), 4096 as usize);
+                //println!("{:?}", &ram.to_vec());
+                assert_eq!(ram.to_vec().len(), 4096 as usize);
                 ram
             }
             ,
@@ -116,7 +120,7 @@ impl<'a> Cpu<'a> {
         //construct an 16-bit opcode from 2 consec. bytes
         let opcode = (self.ram[self.pc as usize] as u16) << 8
             | (self.ram[self.pc as usize + 1] as u16);
-        println!("EXECUTING: {}, pc: {}", &opcode, &self.pc);
+        //println!("EXECUTING: {}, pc: {}", &opcode, &self.pc);
         match opcode & 0xF000 {
             0x0000 => self.op_0(opcode),
             0x1000 => self.op_1(opcode),
@@ -166,7 +170,9 @@ impl<'a> Cpu<'a> {
     }
 
     fn rand_byte() -> u8{
-        5 //rolled by dice, guaranteed to be random
+        let mut rng = rand::thread_rng();
+        let a: u8 = rng.gen();
+        a
     }
 
     //instructions:
@@ -176,15 +182,15 @@ impl<'a> Cpu<'a> {
         match opcode {
             0x00E0 => {
                 self.display.clear();
-                self.pc += 1;
+                self.pc += 2;
             },
             0x00EE => {
                 self.sp -= 1;
-                self.pc = self.stack[self.sp+1] as usize;
+                self.pc = self.stack[self.sp] as usize;
+                self.pc += 2;
             },
             _ => panic!("Unknown opcode: {}, pc: {}", &opcode, &self.pc)
         }
-        
     }
 
     //JP nnn
@@ -205,9 +211,8 @@ impl<'a> Cpu<'a> {
             == Cpu::extract_kk(&opcode) {
             self.pc += 2;
         }
-        else {
-            self.pc += 1;
-        }
+        self.pc += 2;
+        
     }
 
     //SNE Vx, kk
@@ -216,9 +221,7 @@ impl<'a> Cpu<'a> {
             != Cpu::extract_kk(&opcode) {
             self.pc += 2;
         }
-        else {
-            self.pc += 1;
-        }
+        self.pc += 2;
     }
 
     //SE Vx, Vy
@@ -227,23 +230,22 @@ impl<'a> Cpu<'a> {
             == self.v[Cpu::extract_y(&opcode) as usize] {
             self.pc += 2;
         }
-        else {
-            self.pc += 1;
-        }
+        self.pc += 2;
+        
     }
 
     //LD Vx, kk
     fn op_6(&mut self, opcode: u16) {
         self.v[Cpu::extract_x(&opcode) as usize]
             = Cpu::extract_kk(&opcode);
-        self.pc += 1;
+        self.pc += 2;
     }
 
     //ADD Vx, kk
     fn op_7(&mut self, opcode: u16) {
         self.v[Cpu::extract_x(&opcode) as usize]
             += Cpu::extract_kk(&opcode);
-        self.pc += 1;
+        self.pc += 2;
     }
 
     //Vx, Vy
@@ -301,7 +303,7 @@ impl<'a> Cpu<'a> {
             }
             _ => panic!("Unknown opcode")
         }
-        self.pc += 1;
+        self.pc += 2;
     }
 
     //SNE Vx, Vy
@@ -311,16 +313,13 @@ impl<'a> Cpu<'a> {
         if Vx != Vy {
             self.pc += 2;
         }
-        else {
-            self.pc += 1;
-        }
+        self.pc += 2;
     }
 
     //LD I, nnn
     fn op_A(&mut self, opcode: u16) {
-        println!("OP_A");
         self.i = Cpu::extract_nnn(&opcode);
-        self.pc += 1;
+        self.pc += 2;
     }
 
     //JP V0, nnn
@@ -333,7 +332,7 @@ impl<'a> Cpu<'a> {
     fn op_C(&mut self, opcode: u16) {
         self.v[Cpu::extract_x(&opcode) as usize] 
         = Cpu::extract_kk(&opcode) & Cpu::rand_byte();
-        self.pc += 1;
+        self.pc += 2;
     }
 
     //DRW Vx, Vy, n
@@ -350,7 +349,7 @@ impl<'a> Cpu<'a> {
         else {
             self.v[0xF] = 0;
         }
-        self.pc += 1;
+        self.pc += 2;
     }
 
     fn op_E(&mut self, opcode: u16) {
@@ -360,17 +359,15 @@ impl<'a> Cpu<'a> {
                 if self.keys.check_key(Vx) {
                     self.pc += 2;
                 }
-                else {
-                    self.pc += 1;
-                }
+                self.pc += 2;
+                
             }
             0x1 => { //SKNP Vx
                 if !self.keys.check_key(Vx) {
                     self.pc += 2;
                 }
-                else {
-                    self.pc += 1;
-                }
+                self.pc += 2;
+                
             }
             _ => panic!("Unknown opcode")
         }
@@ -415,7 +412,7 @@ impl<'a> Cpu<'a> {
             }
             _ => panic!("Unknown opcode")
         }
-        self.pc += 1;
+        self.pc += 2;
     }
 
     //wrappers to solve lifetime issues
