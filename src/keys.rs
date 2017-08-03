@@ -84,10 +84,12 @@ impl Keys for SDLKeys {
         Some(self.keys)
     }
 
+    #[inline(always)]
     fn get_keys(&self) -> &[bool; 16] {
         &self.keys
     }
 
+    #[inline(always)]
     fn check_key(&self, index: u8) -> bool {
         self.keys[index as usize]
     }
