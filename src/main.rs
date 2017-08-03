@@ -6,7 +6,9 @@ extern crate sdl2;
 
 use keys::*;
 use std::{thread, time, env, fs, io};
+use std::time::{Instant, Duration};
 use std::io::Read;
+use display::Display;
 
 
 fn main() {
@@ -32,16 +34,22 @@ fn main() {
             }
     }
 
-    //init chip8b
+    //init chip8
     let mut cpu = cpu::Cpu::new(&mut keys, &mut display, program);
-    
+    let mut timestamp = Instant::now();
 
     'main: loop{
         match cpu.poll_keys() {
             Some(e) => {},
             None => break 'main
         }
-        
+
+        if timestamp.elapsed() > Duration::from_millis(2) {
+            timestamp = Instant::now();
+            cpu.tick();
+            //print!("tick");
+        }
+
         thread::sleep(time::Duration::from_millis(1));
     }
 }

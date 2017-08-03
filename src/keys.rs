@@ -10,8 +10,6 @@ pub struct SDLKeys {
     keys: [bool; 16]
 }
 
-
-
 pub trait Keys {
     fn poll_keys(&mut self) -> Option<[bool; 16]>;
     fn get_keys(&self) -> &[bool; 16];
@@ -33,7 +31,7 @@ impl Keys for SDLKeys {
             match event {
                 Event::Quit { .. } => return None,
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => return None,
-                Event::KeyDown { keycode: seks, .. } => match seks.unwrap() {
+                Event::KeyDown { keycode: e, .. } => match e.unwrap() {
                     Keycode::Num1 => self.keys[0x1] = true,
                     Keycode::Num2 => self.keys[0x2] = true,
                     Keycode::Num3 => self.keys[0x3] = true,
@@ -53,9 +51,10 @@ impl Keys for SDLKeys {
                     Keycode::X => self.keys[0x0] = true,
                     Keycode::C => self.keys[0xB] = true,
                     Keycode::V => self.keys[0xF] = true,
+
                     _ => {}
                 },
-                Event::KeyUp { keycode: seks, .. } => match seks.unwrap() {
+                Event::KeyUp { keycode: e, .. } => match e.unwrap() {
                     Keycode::Num1 => self.keys[0x1] = false,
                     Keycode::Num2 => self.keys[0x2] = false,
                     Keycode::Num3 => self.keys[0x3] = false,
@@ -75,6 +74,7 @@ impl Keys for SDLKeys {
                     Keycode::X => self.keys[0x0] = false,
                     Keycode::C => self.keys[0xB] = false,
                     Keycode::V => self.keys[0xF] = false,
+
                     _ => {}
                 },
                 _ => {}
