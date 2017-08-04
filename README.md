@@ -5,7 +5,7 @@ I used [Cowgod's Chip-8 technical reference](http://devernay.free.fr/hacks/chip8
 ## Build
 You'll need SDL2 and stable Rust installed. Then just run 
 ```
-cargo run MAZE
+cargo build
 ```
 and it should run fine (If it doesn't, please open an issue).
 ## Usage
